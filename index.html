@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>비드바이 구매대행 비용 계산기</title>
+<style>
+  :root{
+    --bg-page:#EEF1F4;
+    --card-bg:#FFFFFF;
+    --border-soft:#E1E6EA;
+    --label-bg:#EEF2F5;
+    --text-primary:#1B2430;
+    --text-secondary:#76808E;
+    --edit-bg:#E1F2E3;
+    --edit-border:#9CCBA5;
+    --edit-text:#1F5C33;
+    --pending-bg:#FCF1DA;
+    --pending-border:#E6C374;
+    --pending-text:#8A6312;
+    --accent:#1F3B5C;
+    --accent-soft:#E9EEF4;
+    --accent2:#C0392B;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg-page);
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
+    color:var(--text-primary);
+    padding:32px 16px 60px;
+  }
+  .app{max-width:720px;margin:0 auto;}
+
+  /* header */
+  .app-header{
+    background:var(--accent);
+    color:#fff;
+    border-radius:14px;
+    padding:28px 32px 22px;
+    position:relative;
+  }
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:.14em;
+    font-weight:700;
+    color:#9FB6D1;
+    margin-bottom:8px;
+  }
+  .app-header h1{margin:0 0 6px;font-size:23px;font-weight:800;letter-spacing:-.01em;}
+  .app-header p{margin:0;font-size:13px;color:#C7D4E3;}
+
+  /* divider between header and content */
+  .ticket-divider{
+    display:flex;
+    justify-content:center;
+    padding:9px 0;
+    background:var(--bg-page);
+  }
+  .ticket-divider-line{
+    width:55%;
+    border-top:2px dashed #C7D0DA;
+  }
+
+  .panel-wrap{
+    /* 카드 스타일은 각 page-view가 개별적으로 가짐 */
+  }
+
+  .grid-columns{
+    display:block;
+  }
+  .page-view{
+    background:var(--card-bg);
+    border-radius:14px;
+    padding:26px 28px 8px;
+    box-shadow:0 1px 3px rgba(20,30,45,.06);
+  }
+  .page-view.hidden{display:none;}
+  .page-nav-btn{
+    width:100%;
+    margin-top:18px;
+    padding:13px 16px;
+    border:none;
+    background:var(--accent);
+    color:#fff;
+    border-radius:9px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .page-nav-btn:hover{background:#163049;}
+  .page-nav-btn.back{
+    width:auto;
+    margin-top:0;
+    margin-bottom:14px;
+    padding:8px 12px;
+    background:transparent;
+    border:1px solid var(--border-soft);
+    color:var(--text-secondary);
+    font-size:12.5px;
+    font-weight:600;
+  }
+  .page-nav-btn.back:hover{background:var(--label-bg);color:var(--text-primary);}
+
+  .panel-title{
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--text-primary);
+    margin:0 0 14px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--border-soft);
+  }
+
+  .field-group{margin-bottom:20px;}
+  .group-label{
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--text-secondary);
+    margin-bottom:9px;
+  }
+
+  .field-row{
+    display:grid;
+    grid-template-columns:minmax(220px,1fr) minmax(220px,1fr);
+    gap:8px;
+    margin-bottom:6px;
+    align-items:stretch;
+    container-type:inline-size;
+  }
+  .row-label{
+    background:var(--label-bg);
+    border-radius:7px;
+    padding:0 12px;
+    font-size:clamp(13px, 2.9cqw, 19px);
+    font-weight:500;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    line-height:1.3;
+    width:100%;
+    min-width:220px;
+    aspect-ratio:220/35;
+    height:auto;
+    box-sizing:border-box;
+  }
+  .checkbox-row .row-label{cursor:pointer;}
+  .checkbox-row input[type="checkbox"]{
+    width:14px;height:14px;accent-color:var(--accent);cursor:pointer;flex:none;
+  }
+  .row-label.combo-label{justify-content:space-between;cursor:default;}
+  .inline-check{
+    display:flex;align-items:center;gap:4px;
+    font-size:12px;font-weight:500;color:var(--text-secondary);
+    cursor:pointer;flex:none;
+  }
+  .inline-check input[type="checkbox"]{
+    width:13px;height:13px;accent-color:var(--accent);cursor:pointer;flex:none;
+  }
+  .local-tax-paren{
+    font-size:11.5px;color:var(--text-secondary);white-space:nowrap;flex:none;
+  }
+  .row-label.paid-service-check{
+    justify-content:flex-start;gap:8px;cursor:pointer;
+  }
+  .row-label.paid-service-check input[type="checkbox"]{
+    width:14px;height:14px;accent-color:var(--accent);cursor:pointer;flex:none;
+  }
+  .field-row.dim-row{grid-template-columns:minmax(144px,1fr) minmax(144px,1fr) minmax(144px,1fr);}
+  .value-cell.dim-cell{
+    justify-content:center;gap:5px;
+    width:100%;min-width:144px;aspect-ratio:144/35;height:auto;
+    font-size:13.5px;
+  }
+  .dim-label{font-size:11px;color:var(--text-secondary);font-weight:600;flex:none;}
+  .dim-cell input[type="number"]{text-align:center;}
+  .duty-diff{font-weight:700;}
+  .duty-diff.over{color:#C0392B;}
+  .duty-diff.under{color:#2E6FB3;}
+
+  .value-cell{
+    background:#fff;
+    border:1px solid var(--border-soft);
+    border-radius:7px;
+    padding:0 12px;
+    display:flex;
+    align-items:center;
+    gap:4px;
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:clamp(13.5px, 3cqw, 20px);
+    font-weight:600;
+    color:var(--text-primary);
+    width:100%;
+    min-width:220px;
+    aspect-ratio:220/35;
+    height:auto;
+    box-sizing:border-box;
+  }
+  .value-cell.editable{background:var(--edit-bg);border-color:var(--edit-border);color:var(--edit-text);}
+  .value-cell.manual-pending{background:var(--pending-bg);border-color:var(--pending-border);color:var(--pending-text);}
+  .value-cell.calculated{background:#fff;color:var(--text-primary);font-weight:700;}
+  .value-cell .unit{font-size:11px;font-weight:500;color:inherit;opacity:.75;white-space:nowrap;}
+  .value-cell .currency{font-weight:700;opacity:.8;}
+
+  .value-cell input[type="number"],
+  .value-cell input[type="text"],
+  .value-cell select{
+    background:transparent;
+    border:none;
+    outline:none;
+    font:inherit;
+    color:inherit;
+    width:100%;
+    min-width:0;
+  }
+  .value-cell select{cursor:pointer;}
+  .value-cell.disabled{opacity:.45;}
+  .value-cell.disabled input{pointer-events:none;}
+
+  .total-row .value-cell{font-size:14px;}
+  .value-cell.total{
+    background:var(--accent-soft);
+    border-color:var(--accent);
+    color:var(--accent);
+    font-weight:800;
+  }
+
+  .pending-tag{
+    display:inline-block;
+    font-size:9.5px;
+    font-weight:700;
+    background:var(--pending-border);
+    color:#5C4106;
+    border-radius:4px;
+    padding:1px 5px;
+    margin-left:4px;
+    vertical-align:middle;
+  }
+
+  .fetch-btn{
+    width:100%;
+    margin-top:4px;
+    padding:9px 12px;
+    border:1px solid var(--accent);
+    background:var(--accent-soft);
+    color:var(--accent);
+    border-radius:7px;
+    font-size:12.5px;
+    font-weight:700;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .fetch-btn.inline{margin-top:0;}
+  .fetch-btn.circle{
+    width:29px;
+    height:29px;
+    padding:0;
+    margin-top:0;
+    border-radius:50%;
+    justify-self:end;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:none;
+  }
+  .fetch-btn.circle svg{display:block;}
+  .fetch-btn.circle.spinning svg{animation:spin 0.8s linear infinite;}
+  @keyframes spin{
+    from{transform:rotate(0deg);}
+    to{transform:rotate(360deg);}
+  }
+  .fetch-btn:hover{background:var(--accent);color:#fff;}
+  .fetch-btn:disabled{opacity:.5;cursor:default;}
+  .field-row.rate-title-row{grid-template-columns:1fr 29px;align-items:center;}
+  .row-label.subtitle-style{
+    background:transparent;
+    padding:9px 0 9px 0;
+    border-radius:0;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--text-primary);
+    white-space:nowrap;
+    width:auto;
+    min-width:0;
+    aspect-ratio:auto;
+    height:auto;
+  }
+  .rate-status-inline{
+    font-size:inherit;
+    font-weight:400;
+    color:var(--text-secondary);
+    white-space:nowrap;
+  }
+  .rate-status{
+    margin-top:6px;
+    font-size:11.5px;
+    color:var(--text-secondary);
+    padding-left:2px;
+  }
+  .rate-status.ok{color:#1F5C33;font-weight:600;}
+  .rate-status.err{color:#B23A3A;font-weight:600;}
+
+  .detail-toggle{
+    width:100%;
+    margin-top:8px;
+    padding:8px 12px;
+    border:1px dashed var(--border-soft);
+    background:#fff;
+    color:var(--text-secondary);
+    border-radius:7px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .detail-toggle:hover{border-color:var(--accent);color:var(--accent);}
+  .detail-panel{
+    margin-top:10px;
+    padding:12px;
+    background:#FAFBFC;
+    border:1px solid var(--border-soft);
+    border-radius:9px;
+  }
+
+  .fee-note{
+    font-size:10.5px;
+    color:var(--text-secondary);
+    margin:-2px 0 8px 2px;
+  }
+
+  .value-cell.warn{
+    background:#FBE3E3;
+    border-color:#E59A9A;
+    color:#B23A3A;
+  }
+  .value-cell.cheaper-alert{
+    color:#C0392B;
+    font-weight:800;
+  }
+
+  /* summary */
+  .summary-cards{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-top:22px;
+    padding-top:18px;
+    border-top:1px solid var(--border-soft);
+  }
+  .summary-cards.single-card{
+    grid-template-columns:1fr;
+  }
+  .summary-card{
+    background:var(--accent-soft);
+    border:1px solid #C9D6E5;
+    border-radius:12px;
+    padding:18px 20px;
+    text-align:center;
+  }
+  .summary-card.alt{
+    background:#FDECEC;
+    border:2px solid #E2918F;
+    box-shadow:0 3px 10px rgba(192,57,43,0.18);
+  }
+  .summary-label{font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;}
+  .summary-card.alt .summary-label{color:var(--accent2);}
+  .summary-value{font-size:24px;font-weight:800;color:var(--accent);font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",-apple-system,BlinkMacSystemFont,sans-serif;}
+  .summary-card.alt .summary-value{color:var(--accent2);}
+  .saving-note{font-weight:700;}
+
+  .footnote{
+    margin:18px 4px 0;
+    font-size:11.5px;
+    color:var(--text-secondary);
+    line-height:1.5;
+  }
+
+  @media (max-width:760px){
+    .grid-columns{grid-template-columns:1fr;gap:8px;}
+    .app-header{padding:22px 20px 18px;}
+    .panel-wrap{padding:0;}
+    .page-view{padding:20px 16px 8px;}
+    .summary-cards{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="app-header">
+    <div class="eyebrow">BIDBUY COST ESTIMATOR</div>
+    <h1>비드바이 구매대행 비용 계산기</h1>
+  </div>
+  <div class="ticket-divider"><div class="ticket-divider-line"></div></div>
+
+  <div class="panel-wrap">
+    <div class="grid-columns">
+
+      <!-- PAGE 1: INPUT -->
+      <div id="pageInput" class="page-view">
+      <section>
+        <h2 class="panel-title">구매 정보 입력</h2>
+
+        <div class="field-group">
+          <div class="field-row rate-title-row">
+            <div class="row-label subtitle-style">관세청 고시환율(수입) <span id="rateStatusInline" class="rate-status-inline">- 갱신 전</span></div>
+            <button type="button" id="fetchRateBtn" class="fetch-btn circle" title="환율갱신" aria-label="환율갱신">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="field-row">
+            <div class="value-cell editable"><input type="number" id="customsRateJPY" value="0" step="0.0001"><span class="unit">원/¥</span></div>
+            <div class="value-cell editable"><input type="number" id="customsRateUSD" value="0" step="0.01"><span class="unit">원/$</span></div>
+          </div>
+          <div class="field-row">
+            <div class="row-label">비드바이 환율</div>
+            <div class="value-cell editable"><input type="number" id="bidbuyRate" value="0" step="0.01"><span class="unit">원/¥</span></div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="group-label">회원 · 품목 정보</div>
+          <div class="field-row">
+            <div class="row-label">비드바이 회원등급</div>
+            <div class="value-cell editable">
+              <select id="memberGrade">
+                <option>신규회원</option><option>일반회원</option><option>우수회원</option><option>프리미엄</option><option>VIP</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="row-label">품목설정</div>
+            <div class="value-cell editable">
+              <select id="itemCategory">
+                <option>(기본) 관세율 0%</option>
+                <option>(기본) 관세율 8%</option>
+                <option>(기본) 관세율 13%</option>
+                <option>의류</option>
+                <option>신발</option>
+                <option>가방</option>
+                <option>액세서리</option>
+                <option>향수</option>
+                <option>시계</option>
+                <option>골프용품</option>
+                <option>디지털카메라</option>
+                <option>필름카메라</option>
+                <option>캠코더</option>
+                <option>서적</option>
+                <option>상업용 인쇄물</option>
+                <option>TV</option>
+                <option>모니터</option>
+                <option>노트북</option>
+                <option>데스크탑</option>
+                <option>태블릿PC</option>
+                <option>컴퓨터부품</option>
+                <option>컴퓨터용품</option>
+                <option selected>위스키 (20%)</option>
+                <option>위스키 (30%)</option>
+                <option>와인</option>
+                <option>골동품(100년이상)</option>
+                <option>고급가구(500만원이상)</option>
+                <option>고급가방(200만원이상)</option>
+                <option>고급모피(200만원이상)</option>
+                <option>고급시계(200만원이상)</option>
+                <option>고급용단(200만원이상)</option>
+                <option>고급카메라(200만원이상)</option>
+                <option>보석 및 귀금속(200만원이상)</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row checkbox-row">
+            <div class="row-label combo-label">
+              <span>물품가</span>
+              <label class="inline-check"><input type="checkbox" id="localTaxCheck"> 소비세</label>
+            </div>
+            <div class="value-cell editable">
+              <span class="currency">¥</span><input type="number" id="bidPrice" value="0">
+              <span id="localTaxParen" class="local-tax-paren"></span>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="row-label">현지배송료</div>
+            <div class="value-cell editable"><span class="currency">¥</span><input type="number" id="localShipping" value="0"></div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="group-label">무게 · 부피 정보</div>
+          <div class="field-row">
+            <div class="row-label">중량무게 (KG)</div>
+            <div class="value-cell editable"><input type="number" id="actualWeight" value="0" step="0.01"></div>
+          </div>
+          <div class="field-row">
+            <div class="row-label">부피무게 (KG)</div>
+            <div class="value-cell calculated" id="volumeWeight">0.00</div>
+          </div>
+          <div class="field-row dim-row">
+            <div class="value-cell editable dim-cell">
+              <span class="dim-label">가로</span><input type="number" id="dimW" value="0">
+            </div>
+            <div class="value-cell editable dim-cell">
+              <span class="dim-label">세로</span><input type="number" id="dimD" value="0">
+            </div>
+            <div class="value-cell editable dim-cell">
+              <span class="dim-label">높이</span><input type="number" id="dimH" value="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="group-label">국제운송 방법</div>
+          <div class="field-row">
+            <div class="row-label">국제운송방법</div>
+            <div class="value-cell editable">
+              <select id="shippingMethod">
+                <option>비바항공특송</option><option>비드바이선편특송</option><option>EMS</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="group-label">유료서비스</div>
+          <div class="field-row">
+            <label class="row-label paid-service-check"><input type="checkbox" id="alcoholCareCheck" checked> 술술케어</label>
+            <label class="row-label paid-service-check"><input type="checkbox" id="packagingCheck"> 포장수수료</label>
+          </div>
+        </div>
+
+        <button type="button" id="goToResultBtn" class="page-nav-btn">예상비용 계산하기</button>
+      </section>
+      </div>
+
+      <!-- PAGE 2: OUTPUT -->
+      <div id="pageResult" class="page-view hidden">
+      <section>
+        <button type="button" id="backToInputBtn" class="page-nav-btn back">← 입력값 수정하기</button>
+        <h2 class="panel-title">비용 계산 결과</h2>
+
+        <div class="field-group">
+          <div class="group-label">관세 신고 정보</div>
+          <div class="field-row">
+            <div class="row-label">관부가세 과세기준 ($150)</div>
+            <div class="value-cell calculated" id="dutyBase">¥0</div>
+          </div>
+          <div class="field-row">
+            <div class="row-label">관세청 수입신고금액</div>
+            <div class="value-cell calculated" id="declaredAmount">
+              <span id="declaredAmountValue">¥0</span> <span id="declaredAmountDiff" class="duty-diff"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="group-label">비용 상세</div>
+          <div class="field-row">
+            <div class="row-label">물품가</div>
+            <div class="value-cell calculated" id="echoBidPrice">¥0</div>
+          </div>
+          <div class="field-row">
+            <div class="row-label">대행수수료</div>
+            <div class="value-cell calculated" id="agencyFee">¥0</div>
+          </div>
+          <div class="field-row" id="echoLocalTaxRow">
+            <div class="row-label">현지소비세(10%)</div>
+            <div class="value-cell calculated" id="echoLocalTax">¥0</div>
+          </div>
+          <div class="field-row">
+            <div class="row-label">송금수수료</div>
+            <div class="value-cell calculated" id="remitFeeCell">¥300</div>
+          </div>
+          <div class="field-row">
+            <div class="row-label">현지배송료</div>
+            <div class="value-cell calculated" id="echoLocalShipping">¥0</div>
+          </div>
+          <div class="field-row">
+            <div class="row-label">국제운송료</div>
+            <div class="value-cell calculated" id="intlShippingCell">¥0</div>
+          </div>
+          <div class="fee-note" id="intlShippingNote"></div>
+          <div class="field-row" id="cheapestShippingRow">
+            <div class="row-label">최저가운송</div>
+            <div class="value-cell calculated" id="cheapestShipping">-</div>
+          </div>
+          <div class="field-row" id="oversizeFeeRow">
+            <div class="row-label">오버사이즈 추가비용</div>
+            <div class="value-cell calculated" id="oversizeFeeCell">¥0</div>
+          </div>
+          <div class="field-row" id="alcoholCareRow">
+            <div class="row-label">술술케어</div>
+            <div class="value-cell calculated" id="alcoholCareCell"><span id="alcoholCareDisplay">¥1,000</span></div>
+          </div>
+          <div class="field-row" id="packagingFeeRow">
+            <div class="row-label">포장수수료</div>
+            <div class="value-cell calculated disabled" id="packagingCell"><span id="packagingFeeDisplay">¥0</span></div>
+          </div>
+          <div class="field-row" id="exportFeeRow">
+            <div class="row-label">수출통관수수료</div>
+            <div class="value-cell calculated" id="exportFeeCell">¥0</div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="group-label">결제 · 세금</div>
+          <div class="field-row total-row">
+            <div class="row-label">비드바이 결제금액</div>
+            <div class="value-cell total" id="bidbuyPayment">₩0</div>
+          </div>
+          <div class="field-row total-row">
+            <div class="row-label">수입물품 예상세액</div>
+            <div class="value-cell total" id="estimatedTax">₩0</div>
+          </div>
+
+          <button type="button" id="taxDetailToggle" class="detail-toggle">수입물품 예상세액 자세히 보기 ▾</button>
+          <div id="taxDetailPanel" class="detail-panel" style="display:none;">
+            <div class="field-row">
+              <div class="row-label">수입신고금액</div>
+              <div class="value-cell calculated" id="declaredAmountWon">₩0</div>
+            </div>
+            <div class="field-row">
+              <div class="row-label combo-label">
+                <span id="parcelFeeLabel">선편소포일반요금</span>
+                <label class="inline-check"><input type="checkbox" id="excludeParcelFeeCheck"> 제외</label>
+              </div>
+              <div class="value-cell calculated" id="parcelFeeCell">₩0</div>
+            </div>
+            <div class="field-row">
+              <div class="row-label">관부가세 적용금액</div>
+              <div class="value-cell calculated" id="dutyApplyAmount">₩0</div>
+            </div>
+            <div class="field-row" id="taxCustomsRow">
+              <div class="row-label combo-label">
+                <span>관세(<span id="rateCustoms">0</span>%)</span>
+                <label class="inline-check"><input type="checkbox" id="dutyForceTaxableCheck"> 과세</label>
+              </div>
+              <div class="value-cell calculated" id="taxCustoms">₩0</div>
+            </div>
+            <div class="field-row" id="taxLiquorRow">
+              <div class="row-label">주류세(<span id="rateLiquor">0</span>%)</div>
+              <div class="value-cell calculated" id="taxLiquor">₩0</div>
+            </div>
+            <div class="field-row" id="taxSpecialRow">
+              <div class="row-label">개별소비세(<span id="rateSpecial">0</span>%)</div>
+              <div class="value-cell calculated" id="taxSpecial">₩0</div>
+            </div>
+            <div class="field-row" id="taxRuralRow">
+              <div class="row-label">농어촌특별세(<span id="rateRural">0</span>%)</div>
+              <div class="value-cell calculated" id="taxRural">₩0</div>
+            </div>
+            <div class="field-row" id="taxEducationRow">
+              <div class="row-label">교육세(<span id="rateEducation">0</span>%)</div>
+              <div class="value-cell calculated" id="taxEducation">₩0</div>
+            </div>
+            <div class="field-row" id="taxVatRow">
+              <div class="row-label">부가가치세(<span id="rateVat">0</span>%)</div>
+              <div class="value-cell calculated" id="taxVat">₩0</div>
+            </div>
+            <div class="field-row total-row">
+              <div class="row-label">총 과세금액</div>
+              <div class="value-cell total" id="taxTotal">₩0</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+        <div class="summary-cards" id="summaryCards">
+          <div class="summary-card">
+            <div class="summary-label">예상 구매비용</div>
+            <div class="summary-value" id="estimatedTotal">₩0</div>
+          </div>
+          <div class="summary-card alt" id="cheapestCard">
+            <div class="summary-label">최저 구매비용</div>
+            <div class="summary-value">
+              <span id="cheapestTotal">₩0</span> <span id="cheapestSaving" class="saving-note"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// 대행수수료 등급별 요금표 (낙찰가 구간별, 정액 또는 낙찰금액 대비 %)
+// 신규회원/일반회원은 동일한 요금표를 사용합니다.
+const AGENCY_FEE_TABLE = {
+  '신규회원': [
+    { max: 3000,     type: 'flat',    value: 800 },
+    { max: 12000,    type: 'flat',    value: 1000 },
+    { max: 50000,    type: 'percent', value: 0.10 },
+    { max: 150000,   type: 'flat',    value: 6000 },
+    { max: Infinity, type: 'percent', value: 0.05 },
+  ],
+  '우수회원': [
+    { max: 3000,     type: 'flat',    value: 800 },
+    { max: 12000,    type: 'flat',    value: 800 },
+    { max: 50000,    type: 'percent', value: 0.07 },
+    { max: 150000,   type: 'flat',    value: 5000 },
+    { max: Infinity, type: 'percent', value: 0.04 },
+  ],
+  '프리미엄': [
+    { max: 3000,     type: 'flat',    value: 700 },
+    { max: 12000,    type: 'flat',    value: 700 },
+    { max: 50000,    type: 'percent', value: 0.06 },
+    { max: 150000,   type: 'flat',    value: 4000 },
+    { max: Infinity, type: 'percent', value: 0.04 },
+  ],
+  'VIP': [
+    { max: 3000,     type: 'flat',    value: 600 },
+    { max: 12000,    type: 'flat',    value: 600 },
+    { max: 50000,    type: 'percent', value: 0.05 },
+    { max: 150000,   type: 'flat',    value: 3000 },
+    { max: Infinity, type: 'percent', value: 0.03 },
+  ],
+};
+AGENCY_FEE_TABLE['일반회원'] = AGENCY_FEE_TABLE['신규회원'];
+
+function getAgencyFee(bidPrice, grade){
+  const tiers = AGENCY_FEE_TABLE[grade] || AGENCY_FEE_TABLE['신규회원'];
+  const tier = tiers.find(t => bidPrice <= t.max) || tiers[tiers.length - 1];
+  const fee = tier.type === 'flat' ? tier.value : bidPrice * tier.value;
+  const note = tier.type === 'flat'
+    ? `정액 ¥${tier.value.toLocaleString('ko-KR')} 구간 적용`
+    : `낙찰금액의 ${(tier.value * 100).toFixed(0)}% 구간 적용`;
+  return { fee, note };
+}
+
+// 국제운송 요금표 (무게 구간별, 21kg 초과분은 추가요금/kg 적용, 올림 기준)
+const SHIP_MAX_WEIGHT = 200; // kg, 시스템상 처리 가능한 최대 무게
+
+const SHIP_RATE_TABLE = {
+  '비바항공특송': {
+    maxKg: 60, // 60kg 초과 시 배송 불가
+    extraPerKg: 500,
+    table: [
+      [0.5,900],[0.6,1350],[0.7,1350],[0.8,1350],[0.9,1350],[1.0,1350],
+      [1.25,1850],[1.5,1850],[1.75,2350],[2.0,2350],[2.5,2850],[3.0,3350],
+      [3.5,3750],[4.0,4150],[4.5,4550],[5.0,4950],[5.5,5600],[6.0,6000],
+      [7.0,6600],[8.0,7200],[9.0,7800],[10.0,8400],[11.0,8900],[12.0,9400],
+      [13.0,9900],[14.0,10400],[15.0,10900],[16.0,11400],[17.0,11900],
+      [18.0,12400],[19.0,12900],[20.0,13400],[21.0,13900],
+    ],
+  },
+  '비드바이선편특송': {
+    maxKg: Infinity, // 무게 제한 없음
+    extraPerKg: 500,
+    table: [
+      [0.5,2400],[0.6,2400],[0.7,2400],[0.8,2400],[0.9,2400],[1.0,2400],
+      [1.25,2400],[1.5,2400],[1.75,2400],[2.0,2400],[2.5,2400],[3.0,2400],
+      [3.5,2700],[4.0,2700],[4.5,3000],[5.0,3000],[5.5,3300],[6.0,3300],
+      [7.0,3600],[8.0,3900],[9.0,4200],[10.0,4500],[11.0,4800],[12.0,5100],
+      [13.0,5400],[14.0,5700],[15.0,6000],[16.0,6300],[17.0,6600],
+      [18.0,6900],[19.0,7200],[20.0,7500],[21.0,8000],
+    ],
+  },
+  'EMS': {
+    maxKg: 30, // 30kg 초과 시 배송 불가
+    extraPerKg: 800,
+    table: [
+      [0.5,1450],[0.6,1600],[0.7,1750],[0.8,1900],[0.9,2050],[1.0,2200],
+      [1.25,2500],[1.5,2800],[1.75,3100],[2.0,3400],[2.5,3900],[3.0,4400],
+      [3.5,4900],[4.0,5400],[4.5,5900],[5.0,6400],[5.5,6900],[6.0,7400],
+      [7.0,8200],[8.0,9000],[9.0,9800],[10.0,10600],[11.0,11400],[12.0,12200],
+      [13.0,13000],[14.0,13800],[15.0,14600],[16.0,15400],[17.0,16200],
+      [18.0,17000],[19.0,17800],[20.0,18600],[21.0,19400],
+    ],
+  },
+};
+
+function getShippingCost(weightKg, methodKey){
+  const cfg = SHIP_RATE_TABLE[methodKey];
+  if(!cfg) return { available:false, cost:0, reason:'알 수 없는 운송 방법' };
+  const w = Math.max(weightKg, 0.5); // 최소 500g 기준 적용
+
+  if (w > SHIP_MAX_WEIGHT){
+    return { available:false, cost:0, reason:`${SHIP_MAX_WEIGHT}kg 초과 (처리 불가)` };
+  }
+  if (w > cfg.maxKg){
+    return { available:false, cost:0, reason:`${cfg.maxKg}kg 초과로 배송 불가` };
+  }
+
+  const last = cfg.table[cfg.table.length - 1]; // [21, price]
+  if (w <= last[0]){
+    const found = cfg.table.find(([maxKg]) => w <= maxKg);
+    return { available:true, cost: found[1] };
+  }
+  // 21kg 초과: 21kg 요금 + 추가 1kg당 요금 (초과분 올림)
+  const extraKg = Math.ceil(w - last[0]);
+  return { available:true, cost: last[1] + extraKg * cfg.extraPerKg };
+}
+
+// 운송방법별 청구무게 산정 기준
+// - 비바항공특송: 부피무게가 30kg 이상이면 부피무게로 청구, 그 외에는 실중량(중량무게)으로 청구
+// - 그 외(비드바이선편특송, EMS): 실중량과 부피무게 중 더 큰 값으로 청구
+function getChargeableWeight(methodKey, actualWeight, volWeight){
+  if (methodKey === '비바항공특송'){
+    return volWeight >= 30 ? volWeight : actualWeight;
+  }
+  return Math.max(actualWeight, volWeight);
+}
+
+// 비바항공특송 오버사이즈 추가비용(¥1,550): 아래 중 하나라도 해당하면 적용
+// - 중량무게 20kg 이상
+// - 가로+세로+높이 합계 160cm 초과
+// - 가로/세로/높이 중 한 변이라도 100cm 초과
+const OVERSIZE_FEE = 1550;
+function getOversizeSurcharge(methodKey, actualWeight, cmW, cmD, cmH){
+  if (methodKey !== '비바항공특송') return { amount: 0, applies: false, reason: '비바항공특송에만 적용되는 항목입니다' };
+  const sumDims = cmW + cmD + cmH;
+  const maxSide = Math.max(cmW, cmD, cmH);
+  const reasons = [];
+  if (actualWeight >= 20) reasons.push('중량 20kg 이상');
+  if (sumDims > 160) reasons.push('3변 합계 160cm 초과');
+  if (maxSide > 100) reasons.push('한 변 100cm 초과');
+  return reasons.length
+    ? { amount: OVERSIZE_FEE, applies: true, reason: reasons.join(', ') + ' → 오버사이즈 적용' }
+    : { amount: 0, applies: false, reason: '오버사이즈 기준 미해당' };
+}
+
+// EMS 사이즈 제한
+// - 한 변의 길이가 150cm 초과 시 배송 불가
+// - 가장 긴 변 + (나머지 두 변의 합)×2 가 300cm(3m) 이상이면 배송 불가
+function getEmsSizeLimit(cmW, cmD, cmH){
+  const dims = [cmW, cmD, cmH];
+  const maxSide = Math.max(...dims);
+  if (maxSide > 150){
+    return { blocked: true, reason: '한 변 150cm 초과로 배송 불가' };
+  }
+  const otherSum = dims.reduce((a,b) => a + b, 0) - maxSide;
+  const lengthGirth = maxSide + otherSum * 2;
+  if (lengthGirth >= 300){
+    return { blocked: true, reason: `최장변+나머지둘레(${lengthGirth}cm) 300cm(3m) 이상으로 배송 불가` };
+  }
+  return { blocked: false, reason: '' };
+}
+
+// 수출통관수수료: 물품가 ¥200,000 이상일 때 운송방법별로 부과
+const EXPORT_CLEARANCE_FEE = {
+  '비바항공특송': 1500,
+  'EMS': 2800,
+};
+function getExportClearanceFee(methodKey, bidPrice){
+  if (bidPrice < 200000){
+    return { amount: 0, applies: false, reason: '물품가 ¥200,000 미만은 적용되지 않습니다' };
+  }
+  const fee = EXPORT_CLEARANCE_FEE[methodKey];
+  if (!fee){
+    return { amount: 0, applies: false, reason: '이 운송방법에는 수출통관수수료가 적용되지 않습니다' };
+  }
+  return { amount: fee, applies: true, reason: '물품가 ¥200,000 이상 → 수출통관수수료 적용' };
+}
+
+// 운송방법 1개에 대한 청구무게 + 요금 + 오버사이즈 + 수출통관수수료까지 합친 견적
+function quoteFor(methodKey, actualWeight, volWeight, cmW, cmD, cmH, bidPrice){
+  const chargeableWeight = getChargeableWeight(methodKey, actualWeight, volWeight);
+  let ship = getShippingCost(chargeableWeight, methodKey);
+
+  if (methodKey === 'EMS' && ship.available){
+    const sizeLimit = getEmsSizeLimit(cmW, cmD, cmH);
+    if (sizeLimit.blocked){
+      ship = { available: false, cost: 0, reason: sizeLimit.reason };
+    }
+  }
+
+  const oversize = ship.available
+    ? getOversizeSurcharge(methodKey, actualWeight, cmW, cmD, cmH)
+    : { amount: 0, applies: false, reason: '' };
+  const exportFee = ship.available
+    ? getExportClearanceFee(methodKey, bidPrice)
+    : { amount: 0, applies: false, reason: '' };
+  return {
+    method: methodKey,
+    chargeableWeight,
+    available: ship.available,
+    reason: ship.reason,
+    baseCost: ship.cost,
+    oversize,
+    exportFee,
+    totalCost: ship.available ? ship.cost + oversize.amount + exportFee.amount : 0,
+  };
+}
+
+// 품목별 세율표 (관세/주류세/개별소비세/농어촌특별세/교육세/부가가치세, 소수로 표기)
+const ITEM_TAX_TABLE = {
+  '(기본) 관세율 0%':            { customs:0,    liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '(기본) 관세율 8%':            { customs:0.08, liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '(기본) 관세율 13%':           { customs:0.13, liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '의류':                       { customs:0.13, liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '신발':                       { customs:0.13, liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '가방':                       { customs:0.08, liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '액세서리':                    { customs:0.08, liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '향수':                       { customs:0.065,liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '시계':                       { customs:0.08, liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '골프용품':                    { customs:0.08, liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '디지털카메라':                 { customs:0.08, liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '필름카메라':                   { customs:0.08, liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '캠코더':                      { customs:0.08, liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '서적':                       { customs:0,    liquor:0,    special:0,    rural:0,   education:0,    vat:0 },
+  '상업용 인쇄물':                 { customs:0.08, liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  'TV':                        { customs:0.08, liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '모니터':                      { customs:0,    liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '노트북':                      { customs:0,    liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '데스크탑':                     { customs:0,    liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '태블릿PC':                    { customs:0,    liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '컴퓨터부품':                    { customs:0,    liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '컴퓨터용품':                    { customs:0,    liquor:0,    special:0,    rural:0,   education:0,    vat:0.10 },
+  '위스키 (20%)':                { customs:0.20, liquor:0.72, special:0,    rural:0,   education:0.30, vat:0.10 },
+  '위스키 (30%)':                { customs:0.30, liquor:0.72, special:0,    rural:0,   education:0.30, vat:0.10 },
+  '와인':                       { customs:0.15, liquor:0.30, special:0,    rural:0,   education:0.10, vat:0.10 },
+  '골동품(100년이상)':             { customs:0,    liquor:0,    special:0,    rural:0,   education:0,    vat:0 },
+  '고급가구(500만원이상)':          { customs:0.08, liquor:0,    special:0.20, rural:0.10,education:0.30, vat:0.10 },
+  '고급가방(200만원이상)':          { customs:0.08, liquor:0,    special:0.20, rural:0.10,education:0.30, vat:0.10 },
+  '고급모피(200만원이상)':          { customs:0.16, liquor:0,    special:0.30, rural:0.10,education:0.30, vat:0.10 },
+  '고급시계(200만원이상)':          { customs:0.08, liquor:0,    special:0.20, rural:0.10,education:0.30, vat:0.10 },
+  '고급용단(200만원이상)':          { customs:0.08, liquor:0,    special:0.20, rural:0.10,education:0.30, vat:0.10 },
+  '고급카메라(200만원이상)':         { customs:0.08, liquor:0,    special:0.20, rural:0.10,education:0.30, vat:0.10 },
+  '보석 및 귀금속(200만원이상)':      { customs:0.13, liquor:0,    special:0.20, rural:0.10,education:0.30, vat:0.10 },
+};
+
+// 관세 계산은 10원 미만 버림(절사)이 일반적인 관행입니다.
+function floor10(v){ return Math.floor(v / 10) * 10; }
+
+// 선편소포일반요금 / 특급탁송화물과세운임표 (중량(KG) 기준, 0~28kg)
+// [중량상한kg, 선편일반소포요금, 특급탁송화물과세운임]
+const PARCEL_FEE_TABLE = [
+  [0,9900,21000],[1,9900,21000],[2,15500,30000],[3,20000,39000],[4,20000,48000],
+  [5,24500,51600],[6,24500,55800],[7,29000,60000],[8,29000,64200],[9,34000,68400],
+  [10,34000,72000],[11,38500,76200],[12,38500,80400],[13,43000,84600],[14,43000,88200],
+  [15,47500,91800],[16,47500,95400],[17,52500,99000],[18,57000,102600],[19,57000,106200],
+  [20,57000,106200],[21,61500,113400],[22,61500,113400],[23,66000,120600],[24,66000,120600],
+  [25,70500,127800],[26,70500,127800],[27,75000,135000],[28,75000,135000],
+];
+const PARCEL_FEE_EXTRA_KG_STEP = 2;      // 28kg 초과분은 2kg당
+const PARCEL_FEE_SURFACE_STEP = 4500;    // 선편일반소포요금 추가분
+const PARCEL_FEE_EXPRESS_STEP = 7200;    // 특급탁송화물과세운임 추가분
+const PARCEL_FEE_THRESHOLD_WON = 200000; // 관세청 수입신고금액(원화환산) 기준
+
+// 중량(KG)에 해당하는 선편일반소포요금/특급탁송화물과세운임을 조회 (28kg 초과 시 2kg당 추가요금 적용)
+function getParcelFeeRates(weightKg){
+  const w = Math.max(weightKg, 0);
+  const last = PARCEL_FEE_TABLE[PARCEL_FEE_TABLE.length - 1]; // [28, 75000, 135000]
+  if (w <= last[0]){
+    const idx = Math.min(Math.ceil(w), last[0]);
+    const row = PARCEL_FEE_TABLE.find(([kg]) => kg === idx) || last;
+    return { surface: row[1], express: row[2] };
+  }
+  const extraKg = w - last[0];
+  const steps = Math.ceil(extraKg / PARCEL_FEE_EXTRA_KG_STEP);
+  return {
+    surface: last[1] + steps * PARCEL_FEE_SURFACE_STEP,
+    express: last[2] + steps * PARCEL_FEE_EXPRESS_STEP,
+  };
+}
+
+// 관세청 수입신고금액(원화환산)이 ₩200,000을 넘으면 특급탁송화물과세운임, 아니면 선편일반소포요금 적용
+function getParcelFee(actualWeight, declaredAmountWon){
+  const { surface, express } = getParcelFeeRates(actualWeight);
+  const useExpress = declaredAmountWon > PARCEL_FEE_THRESHOLD_WON;
+  return {
+    amount: useExpress ? express : surface,
+    type: useExpress ? 'express' : 'surface',
+    surface,
+    express,
+  };
+}
+
+// 수입물품 예상세액 cascading 계산
+// 관부가가치세 적용금액 = 관세청 수입신고금액(원화환산) + 선편소포일반요금
+// 관세/부가가치세는 관세청 수입신고금액(원화환산)이 관부가가치세 과세기준을 초과할 때만 과세
+// 관세 = 적용금액 × 관세율
+// 주류세/개별소비세 = (적용금액+관세) × 각 세율
+// 농어촌특별세 = 개별소비세 × 농어촌특별세율 (개별소비세에 대한 surcharge)
+// 교육세 = (주류세 또는 개별소비세 중 발생한 금액) × 교육세율
+// 부가가치세 = (적용금액+관세+주류세+개별소비세+농어촌특별세+교육세) × 부가가치세율
+// 총 과세금액 = 관세+주류세+개별소비세+농어촌특별세+교육세+부가가치세
+// (각 단계 금액은 10원 단위 절삭)
+function calcImportTax(dutyApplyAmount, rates, dutyTaxable){
+  const customs = dutyTaxable ? floor10(dutyApplyAmount * rates.customs) : 0;
+  const baseAfterCustoms = dutyApplyAmount + customs;
+  const liquor = floor10(baseAfterCustoms * rates.liquor);
+  const special = floor10(baseAfterCustoms * rates.special);
+  const rural = floor10(special * rates.rural);
+  const education = floor10((liquor + special) * rates.education);
+  const vatBase = dutyApplyAmount + customs + liquor + special + rural + education;
+  const vat = dutyTaxable ? floor10(vatBase * rates.vat) : 0;
+  const total = customs + liquor + special + rural + education + vat;
+  return { customs, liquor, special, rural, education, vat, total };
+}
+
+function $(id){return document.getElementById(id);}
+function num(id){return parseFloat($(id).value) || 0;}
+function won(v){return '₩' + Math.round(v).toLocaleString('ko-KR');}
+function yen(v){return '¥' + Math.round(v).toLocaleString('ko-KR');}
+
+function setCellEnabled(checkboxId, cellId, inputId){
+  const checked = $(checkboxId).checked;
+  $(cellId).classList.toggle('disabled', !checked);
+  return checked ? num(inputId) : 0;
+}
+
+function calculate(){
+  const bidbuyRate = num('bidbuyRate');
+
+  const bidPrice = num('bidPrice');
+
+  // 현지소비세: 체크 시 물품가의 10%, 물품가 옆에 괄호로 표시
+  const localTaxChecked = $('localTaxCheck').checked;
+  const localTax = localTaxChecked ? bidPrice * 0.10 : 0;
+  $('localTaxParen').textContent = localTaxChecked ? `(+${yen(localTax)})` : '';
+
+  const localShipping = num('localShipping');
+
+  // dimensions -> volumetric weight (divisor 5000)
+  const actualWeight = num('actualWeight');
+  const cmW = num('dimW'), cmD = num('dimD'), cmH = num('dimH');
+  const volWeight = (cmW*cmD*cmH)/5000;
+  $('volumeWeight').textContent = volWeight.toFixed(2);
+
+  const memberGrade = $('memberGrade').value;
+  const { fee: agencyFee } = getAgencyFee(bidPrice, memberGrade);
+  $('agencyFee').textContent = yen(agencyFee);
+  const remitFee = 300; // 송금수수료: 고정값, 수정 불가
+
+  // 선택한 국제운송방법으로 요금 조회 (운송방법별 청구무게 기준이 다름)
+  const selectedMethod = $('shippingMethod').value;
+  const selectedQuote = quoteFor(selectedMethod, actualWeight, volWeight, cmW, cmD, cmH, bidPrice);
+  const intlShippingCell = $('intlShippingCell');
+  const intlShippingNote = $('intlShippingNote');
+  const oversizeFeeCell = $('oversizeFeeCell');
+  const exportFeeCell = $('exportFeeCell');
+  let intlShipping = 0;
+  let oversizeAmount = 0;
+  let exportFeeAmount = 0;
+  if (selectedQuote.available){
+    intlShipping = selectedQuote.totalCost;
+    intlShippingCell.classList.remove('warn');
+    intlShippingCell.textContent = yen(selectedQuote.baseCost);
+    intlShippingNote.textContent = '';
+    oversizeAmount = selectedQuote.oversize.amount;
+    oversizeFeeCell.classList.toggle('warn', selectedQuote.oversize.applies);
+    oversizeFeeCell.textContent = yen(oversizeAmount);
+    exportFeeAmount = selectedQuote.exportFee.amount;
+    exportFeeCell.classList.toggle('warn', selectedQuote.exportFee.applies);
+    exportFeeCell.textContent = yen(exportFeeAmount);
+  } else {
+    intlShippingCell.classList.add('warn');
+    intlShippingCell.textContent = '배송 불가';
+    intlShippingNote.textContent = `${selectedQuote.reason} · 다른 운송방법을 선택하세요`;
+    oversizeFeeCell.classList.remove('warn');
+    oversizeFeeCell.textContent = '¥0';
+    exportFeeCell.classList.remove('warn');
+    exportFeeCell.textContent = '¥0';
+  }
+  // 청구되는 비용이 없으면(0원) 행 자체를 숨김
+  $('oversizeFeeRow').style.display = oversizeAmount > 0 ? '' : 'none';
+  $('exportFeeRow').style.display = exportFeeAmount > 0 ? '' : 'none';
+
+  // 3개 운송방법 중 이용 가능한 곳 중 (오버사이즈 포함) 최저가 비교
+  const quotes = Object.keys(SHIP_RATE_TABLE).map(m => quoteFor(m, actualWeight, volWeight, cmW, cmD, cmH, bidPrice));
+  const availableQuotes = quotes.filter(q => q.available);
+  const cheapest = availableQuotes.length
+    ? availableQuotes.reduce((a,b) => a.totalCost <= b.totalCost ? a : b)
+    : null;
+
+  // 선택한 운송방법이 배송 불가이거나, 최저가 방법이 선택한 것보다 더 저렴할 때만 "최저가운송" 노출
+  const showCheapest = !!cheapest && (!selectedQuote.available || cheapest.totalCost < selectedQuote.totalCost);
+  $('cheapestShippingRow').style.display = showCheapest ? '' : 'none';
+  $('cheapestShipping').classList.toggle('cheaper-alert', showCheapest);
+  if (showCheapest){
+    $('cheapestShipping').textContent = cheapest.method.replace(/^\d+\.\s*/, '') + ' (¥' + cheapest.totalCost.toLocaleString('ko-KR') + ')';
+  }
+
+  // 술술케어: 체크 시 ¥1,000 고정, 체크 해제 시 ¥0 (직접 입력 불가)
+  const alcoholCareChecked = $('alcoholCareCheck').checked;
+  const alcoholCare = alcoholCareChecked ? 1000 : 0;
+  $('alcoholCareDisplay').textContent = yen(alcoholCare);
+  $('alcoholCareRow').style.display = alcoholCare > 0 ? '' : 'none';
+  // 포장수수료: 체크 시 ¥1,000 고정
+  const packagingChecked = $('packagingCheck').checked;
+  $('packagingCell').classList.toggle('disabled', !packagingChecked);
+  const packagingFee = packagingChecked ? 1000 : 0;
+  $('packagingFeeDisplay').textContent = yen(packagingFee);
+  $('packagingFeeRow').style.display = packagingFee > 0 ? '' : 'none';
+
+  // 관세청 수입신고금액 = 물품가 + 현지소비세 + 현지배송료
+  const declaredAmount = bidPrice + localTax + localShipping;
+  $('declaredAmountValue').textContent = yen(declaredAmount);
+
+  $('echoBidPrice').textContent = yen(bidPrice);
+  $('echoLocalTax').textContent = yen(localTax);
+  $('echoLocalTaxRow').style.display = localTax > 0 ? '' : 'none';
+  $('echoLocalShipping').textContent = yen(localShipping);
+
+  // 관세청 수입신고금액(원화환산) = 관세청 수입신고금액(¥) × 관세청 고시환율(수입) 엔화
+  const customsRateJPY = num('customsRateJPY');
+  const customsRateUSD = num('customsRateUSD');
+  const declaredAmountWon = declaredAmount * customsRateJPY;
+  $('declaredAmountWon').textContent = won(declaredAmountWon);
+
+  // 관부가가치세 과세기준 = (관세청 고시환율(수입) 달러 × 150) ÷ 관세청 고시환율(수입) 엔화
+  // → $150 면세기준을 엔화 금액으로 환산하여 관세청 수입신고금액(¥)과 직접 비교
+  const dutyBase = customsRateJPY > 0 ? (customsRateUSD * 150) / customsRateJPY : 0;
+  $('dutyBase').textContent = yen(dutyBase);
+
+  // 관세청 수입신고금액이 관부가세 과세기준보다 얼마나 초과/모자라는지 표시 (+초과 / -모자람)
+  const diffAmount = declaredAmount - dutyBase;
+  const diffEl = $('declaredAmountDiff');
+  if (diffAmount > 0){
+    diffEl.textContent = `(+${yen(diffAmount)})`;
+    diffEl.className = 'duty-diff over';
+  } else if (diffAmount < 0){
+    diffEl.textContent = `(-${yen(-diffAmount)})`;
+    diffEl.className = 'duty-diff under';
+  } else {
+    diffEl.textContent = `(¥0)`;
+    diffEl.className = 'duty-diff';
+  }
+
+  // 관부가가치세 적용금액 = 관세청 수입신고금액(원화환산) + 선편소포일반요금/특급탁송화물과세운임
+  // (관세청 수입신고금액(원화환산)이 ₩200,000 초과면 특급탁송화물과세운임 적용, 기준은 중량무게)
+  const parcelFeeResult = getParcelFee(actualWeight, declaredAmountWon);
+  const parcelFee = parcelFeeResult.amount;
+  $('parcelFeeCell').textContent = won(parcelFee);
+  $('parcelFeeLabel').textContent = parcelFeeResult.type === 'express' ? '특급탁송화물과세운임' : '선편소포일반요금';
+
+  const excludeParcelFee = $('excludeParcelFeeCheck').checked;
+  const dutyApplyAmount = declaredAmountWon + (excludeParcelFee ? 0 : parcelFee);
+  $('dutyApplyAmount').textContent = won(dutyApplyAmount);
+
+  // 품목설정에 따른 세율로 관세/주류세/개별소비세/농어촌특별세/교육세/부가가치세 계산
+  const itemCategory = $('itemCategory').value;
+  const rates = ITEM_TAX_TABLE[itemCategory] || ITEM_TAX_TABLE['(기본) 관세율 0%'];
+
+  // 관세/부가가치세는 관세청 수입신고금액(¥)이 관부가가치세 과세기준(¥)을 초과할 때만 과세
+  const dutyForceTaxable = $('dutyForceTaxableCheck').checked;
+  const dutyTaxable = dutyForceTaxable || (declaredAmount > dutyBase);
+  const taxResult = calcImportTax(dutyApplyAmount, rates, dutyTaxable);
+
+  $('rateCustoms').textContent = (rates.customs * 100).toString();
+  $('rateLiquor').textContent = (rates.liquor * 100).toString();
+  $('rateSpecial').textContent = (rates.special * 100).toString();
+  $('rateRural').textContent = (rates.rural * 100).toString();
+  $('rateEducation').textContent = (rates.education * 100).toString();
+  $('rateVat').textContent = (rates.vat * 100).toString();
+
+  $('taxCustoms').textContent = won(taxResult.customs);
+  $('taxLiquor').textContent = won(taxResult.liquor);
+  $('taxLiquorRow').style.display = taxResult.liquor > 0 ? '' : 'none';
+  $('taxSpecial').textContent = won(taxResult.special);
+  $('taxSpecialRow').style.display = taxResult.special > 0 ? '' : 'none';
+  $('taxRural').textContent = won(taxResult.rural);
+  $('taxRuralRow').style.display = taxResult.rural > 0 ? '' : 'none';
+  $('taxEducation').textContent = won(taxResult.education);
+  $('taxEducationRow').style.display = taxResult.education > 0 ? '' : 'none';
+  $('taxVat').textContent = won(taxResult.vat);
+  $('taxVatRow').style.display = taxResult.vat > 0 ? '' : 'none';
+  $('taxTotal').textContent = won(taxResult.total);
+
+  const estimatedTax = taxResult.total;
+  $('estimatedTax').textContent = won(estimatedTax);
+
+  const yenCostWithoutShipping = bidPrice + agencyFee + localTax + remitFee + localShipping + alcoholCare + packagingFee;
+
+  // 비드바이 결제금액 / 예상 구매비용 (선택한 운송방법 기준)
+  let estimatedTotal = null;
+  if (selectedQuote.available){
+    const bidbuyPayment = (yenCostWithoutShipping + intlShipping) * bidbuyRate;
+    estimatedTotal = bidbuyPayment + estimatedTax;
+    $('bidbuyPayment').textContent = won(bidbuyPayment);
+    $('estimatedTotal').textContent = won(estimatedTotal);
+  } else {
+    $('bidbuyPayment').textContent = '계산 불가';
+    $('estimatedTotal').textContent = '계산 불가';
+  }
+
+  // 최저 구매비용 (최저가 운송방법 기준) — 예상 구매비용보다 실제로 더 저렴할 때만 노출
+  let cheapestTotal = null;
+  if (cheapest){
+    const cheapestBidbuyPayment = (yenCostWithoutShipping + cheapest.totalCost) * bidbuyRate;
+    cheapestTotal = cheapestBidbuyPayment + estimatedTax;
+  }
+  const showCheapestCard = cheapestTotal != null && estimatedTotal != null && cheapestTotal < estimatedTotal;
+  $('cheapestCard').style.display = showCheapestCard ? '' : 'none';
+  $('summaryCards').classList.toggle('single-card', !showCheapestCard);
+  if (showCheapestCard){
+    $('cheapestTotal').textContent = won(cheapestTotal);
+    $('cheapestSaving').textContent = `(-${won(estimatedTotal - cheapestTotal)})`;
+  }
+}
+
+document.querySelectorAll('input, select').forEach(el=>{
+  el.addEventListener('input', calculate);
+  el.addEventListener('change', calculate);
+});
+
+// 관세청 고시환율 프록시 서버 주소 (Render에 배포된 고정 주소)
+const CUSTOMS_PROXY_URL = 'https://bidbuycacl.onrender.com';
+
+let rateCooldownTimer = null;
+
+// "20260624" -> "2026.06.24"
+function formatRateDate(yyyymmdd){
+  if (!yyyymmdd || String(yyyymmdd).length !== 8) return yyyymmdd || '';
+  const s = String(yyyymmdd);
+  return `${s.slice(0,4)}.${s.slice(4,6)}.${s.slice(6,8)}`;
+}
+
+// 마지막으로 성공적으로 불러온 관세청 고시환율을 저장/복원 (다음에 열었을 때 그대로 이어서 사용)
+const RATE_CACHE_KEY = 'bidbuy_customs_rate_cache_v1';
+
+function saveRateCache(jpy, usd, aplyBgnDt){
+  try{
+    localStorage.setItem(RATE_CACHE_KEY, JSON.stringify({ jpy, usd, aplyBgnDt }));
+  }catch(e){ /* localStorage를 쓸 수 없는 환경이면 그냥 무시 */ }
+}
+
+function loadRateCache(){
+  try{
+    const raw = localStorage.getItem(RATE_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+
+// "예상비용 계산하기"를 누를 때마다 입력값 전체를 저장해두고, 다음에 페이지를 열 때 그대로 복원
+const FORM_CACHE_KEY = 'bidbuy_form_state_v1';
+const FORM_FIELDS = [
+  { id: 'bidbuyRate', type: 'value' },
+  { id: 'customsRateJPY', type: 'value' },
+  { id: 'customsRateUSD', type: 'value' },
+  { id: 'memberGrade', type: 'value' },
+  { id: 'itemCategory', type: 'value' },
+  { id: 'bidPrice', type: 'value' },
+  { id: 'localTaxCheck', type: 'checked' },
+  { id: 'localShipping', type: 'value' },
+  { id: 'actualWeight', type: 'value' },
+  { id: 'dimW', type: 'value' },
+  { id: 'dimD', type: 'value' },
+  { id: 'dimH', type: 'value' },
+  { id: 'shippingMethod', type: 'value' },
+  { id: 'alcoholCareCheck', type: 'checked' },
+  { id: 'packagingCheck', type: 'checked' },
+  { id: 'dutyForceTaxableCheck', type: 'checked' },
+  { id: 'excludeParcelFeeCheck', type: 'checked' },
+];
+
+function saveFormCache(){
+  try{
+    const snapshot = {};
+    FORM_FIELDS.forEach(({ id, type }) => {
+      const el = $(id);
+      if (!el) return;
+      snapshot[id] = type === 'checked' ? el.checked : el.value;
+    });
+    localStorage.setItem(FORM_CACHE_KEY, JSON.stringify(snapshot));
+  }catch(e){ /* localStorage를 쓸 수 없는 환경이면 그냥 무시 */ }
+}
+
+function loadFormCache(){
+  try{
+    const raw = localStorage.getItem(FORM_CACHE_KEY);
+    if (!raw) return;
+    const snapshot = JSON.parse(raw);
+    FORM_FIELDS.forEach(({ id, type }) => {
+      const el = $(id);
+      if (!el || !(id in snapshot)) return;
+      if (type === 'checked') el.checked = snapshot[id];
+      else el.value = snapshot[id];
+    });
+  }catch(e){ /* 저장된 값이 없거나 손상된 경우 그냥 무시 */ }
+}
+
+function startRateCooldown(seconds, errMessage){
+  const status = $('rateStatusInline');
+  if (rateCooldownTimer) clearInterval(rateCooldownTimer);
+  let remaining = seconds;
+  status.textContent = `- 실패, ${remaining}초 후 자동 재시도`;
+  rateCooldownTimer = setInterval(() => {
+    remaining--;
+    if (remaining <= 0){
+      clearInterval(rateCooldownTimer);
+      rateCooldownTimer = null;
+      status.textContent = '- 자동 재시도 중...';
+      fetchCustomsRates(true);
+    } else {
+      status.textContent = `- 실패, ${remaining}초 후 자동 재시도`;
+    }
+  }, 1000);
+}
+
+async function fetchCustomsRates(isRetry){
+  const btn = $('fetchRateBtn');
+  const status = $('rateStatusInline');
+  if (btn.disabled && !isRetry) return; // 진행 중이거나 자동 재시도 대기 중 (수동 클릭만 막음)
+  const base = CUSTOMS_PROXY_URL;
+  btn.disabled = true;
+  btn.classList.add('spinning');
+  status.textContent = isRetry ? '- 자동 재시도 중...' : '- 불러오는 중...';
+  try{
+    const res = await fetch(base + '/api/customs-rate');
+    if(!res.ok) throw new Error('서버 응답 오류 (' + res.status + ')');
+    const data = await res.json();
+    if(data.jpy == null || data.usd == null){
+      throw new Error('관세청 응답에 JPY/USD 환율이 없습니다');
+    }
+    $('customsRateJPY').value = data.jpy;
+    $('customsRateUSD').value = data.usd;
+    saveRateCache(data.jpy, data.usd, data.aplyBgnDt);
+    status.textContent = `- 적용일자 : ${formatRateDate(data.aplyBgnDt)}`;
+    calculate();
+    btn.disabled = false;
+  }catch(err){
+    if (!isRetry){
+      // 첫 실패: 60초 후 자동으로 한 번만 재시도
+      startRateCooldown(60, err.message);
+    } else {
+      // 자동 재시도까지 실패한 경우엔 더 기다리지 않고 바로 다시 누를 수 있게 풀어줌
+      status.textContent = '- 실패 (다시 눌러주세요)';
+      btn.disabled = false;
+    }
+  }finally{
+    btn.classList.remove('spinning');
+  }
+}
+$('fetchRateBtn').addEventListener('click', () => fetchCustomsRates());
+
+$('taxDetailToggle').addEventListener('click', () => {
+  const panel = $('taxDetailPanel');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  $('taxDetailToggle').textContent = isOpen
+    ? '수입물품 예상세액 자세히 보기 ▾'
+    : '수입물품 예상세액 접기 ▴';
+});
+
+// 저번에 "예상비용 계산하기"를 눌렀을 때 저장해둔 입력값이 있으면 먼저 복원
+loadFormCache();
+
+// 저장된 관세청 고시환율이 있으면 불러오기 전에 미리 적용
+const cachedRate = loadRateCache();
+if (cachedRate && cachedRate.jpy != null && cachedRate.usd != null){
+  $('customsRateJPY').value = cachedRate.jpy;
+  $('customsRateUSD').value = cachedRate.usd;
+  $('rateStatusInline').textContent = `- 적용일자 : ${formatRateDate(cachedRate.aplyBgnDt)} (저장된 값)`;
+}
+
+// 페이지 전환: 구매 정보 입력 ↔ 비용 계산 결과
+$('goToResultBtn').addEventListener('click', () => {
+  calculate();
+  saveFormCache();
+  $('pageInput').classList.add('hidden');
+  $('pageResult').classList.remove('hidden');
+  window.scrollTo(0, 0);
+});
+$('backToInputBtn').addEventListener('click', () => {
+  $('pageResult').classList.add('hidden');
+  $('pageInput').classList.remove('hidden');
+  window.scrollTo(0, 0);
+});
+
+calculate();
+</script>
+</body>
+</html>
